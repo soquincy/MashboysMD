@@ -8,6 +8,6 @@ This HTML file simply parses the tracker for better search functionality.
 - Can also search by artist, title, or both
 
 ## Issues
-- It gets confused with some entries. *I will fix this soon.*
+- It gets confused with some entries, especially variable BPMs and keys. *I will fix this soon.*
 
 MashboysMD is licenced under the Unlicense license.
