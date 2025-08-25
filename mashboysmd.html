@@ -1,0 +1,613 @@
+            <div class="search-group">
+                <label for="albumFilter">Album</label>
+                <select id="albumFilter">
+                    <option value="">All Albums</option>
+                </select>
+            </div><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Song Search - BPM & Key Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0b4213 0%, #070157 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 5 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .search-section {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 15px;
+            margin-bottom: 30px;
+            align-items: end;
+        }
+
+        .search-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #0a0a0a;
+        }
+
+        input, select {
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .filter-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .bpm-filter {
+            display: flex;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .bpm-filter input {
+            width: 80px;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #0d4408, #00da5b); 
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .results-section {
+            margin-top: 20px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .results-count {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .sort-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .songs-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .song-card {
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .song-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .song-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .song-artist {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+
+        .song-details {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            min-width: 60px;
+        }
+
+        .detail-label {
+            font-size: 0.8rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+            margin-top: 2px;
+        }
+
+        .upload-section {
+            text-align: center;
+            padding: 40px;
+            border: 2px dashed #667eea;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .upload-section.dragover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #764ba2;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-button {
+            background: linear-gradient(135deg, #0d4408, #00da5b);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1.1rem;
+            margin-top: 15px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            .search-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .bpm-filter {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .bpm-filter input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MASHBOYS SONG METADATA SEARCHER</h1>
+        
+        <div class="upload-section" id="uploadSection">
+            <h3>Upload Your ODS File</h3>
+            <p>Export your Google Sheets as ODS to preserve all artist sheets</p>
+            <input type="file" id="fileInput" class="file-input" accept=".ods,.csv" multiple>
+            <button class="upload-button" onclick="document.getElementById('fileInput').click()">
+                Choose ODS/CSV Files
+            </button>
+            <p style="margin-top: 10px; font-size: 0.9rem; color: #666;">
+                ODS files will import all sheets automatically. CSV files work for individual sheets.
+            </p>
+        </div>
+
+        <div class="search-section">
+            <div class="search-group">
+                <label for="searchInput">Search Songs</label>
+                <input type="text" id="searchInput" placeholder="Enter song title, artist, or both...">
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <div class="search-group">
+                <label for="artistFilter">Artist</label>
+                <select id="artistFilter">
+                    <option value="">All Artists</option>
+                </select>
+            </div>
+            
+            <div class="search-group">
+                <label for="keyFilter">Key</label>
+                <select id="keyFilter">
+                    <option value="">All Keys</option>
+                </select>
+            </div>
+            
+            <div class="bpm-filter">
+                <div class="search-group">
+                    <label for="bpmMin">Min BPM</label>
+                    <input type="number" id="bpmMin" placeholder="80">
+                </div>
+                <div class="search-group">
+                    <label for="bpmMax">Max BPM</label>
+                    <input type="number" id="bpmMax" placeholder="159">
+                </div>
+            </div>
+            
+            <div class="search-group">
+                <button onclick="clearFilters()">Clear Filters</button>
+            </div>
+        </div>
+
+        <div class="results-section">
+            <div class="results-header">
+                <div class="results-count" id="resultsCount">Upload ODS or CSV files to start searching</div>
+                <div class="sort-controls">
+                    <label for="sortBy">Sort by:</label>
+                    <select id="sortBy">
+                        <option value="title">Song Title</option>
+                        <option value="artist">Artist</option>
+                        <option value="album">Album</option>
+                        <option value="bpm">BPM</option>
+                        <option value="key">Key</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="songs-grid" id="songsGrid">
+                <div class="no-results">
+                    Upload your ODS file or CSV files to search through your song database
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allSongs = [];
+        let filteredSongs = [];
+
+        // File upload handling
+        const fileInput = document.getElementById('fileInput');
+        const uploadSection = document.getElementById('uploadSection');
+
+        fileInput.addEventListener('change', handleFiles);
+
+        // Drag and drop
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            handleFiles({ target: { files: e.dataTransfer.files } });
+        });
+
+        async function handleFiles(event) {
+            const files = Array.from(event.target.files);
+            allSongs = [];
+            
+            for (const file of files) {
+                if (file.name.endsWith('.ods')) {
+                    const songs = await parseODS(file);
+                    allSongs.push(...songs);
+                } else if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+                    const text = await file.text();
+                    const songs = parseCSV(text, file.name);
+                    allSongs.push(...songs);
+                }
+            }
+            
+            if (allSongs.length > 0) {
+                populateFilters();
+                applyFilters();
+                uploadSection.style.display = 'none';
+            }
+        }
+
+        async function parseODS(file) {
+            // Load SheetJS library for ODS parsing
+            if (!window.XLSX) {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+                document.head.appendChild(script);
+                
+                // Wait for library to load
+                await new Promise(resolve => {
+                    script.onload = resolve;
+                });
+            }
+            
+            const arrayBuffer = await file.arrayBuffer();
+            const workbook = window.XLSX.read(arrayBuffer, { type: 'array' });
+            const allSongs = [];
+            
+            // Process each sheet (artist) - skip MAIN_PAGE
+            workbook.SheetNames.forEach(sheetName => {
+                if (sheetName === 'MAIN_PAGE') return; // Skip main page
+                
+                const worksheet = workbook.Sheets[sheetName];
+                const jsonData = window.XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                
+                if (jsonData.length < 4) return; // Need at least 4 rows (title, artist, headers, data)
+                
+                // Your format: Row 0 = title, Row 1 = artist name, Row 2 = headers, Row 3+ = data
+                const artistName = jsonData[1] && jsonData[1][0] ? String(jsonData[1][0]).trim() : sheetName.replace(/_/g, ' ');
+                const headers = jsonData[2] ? jsonData[2].map(h => String(h || '').trim().toLowerCase()) : [];
+                
+                // Find column positions based on your format
+                const albumCol = headers.findIndex(h => h.includes('album'));
+                const songCol = headers.findIndex(h => h.includes('song name') || h.includes('song') || h.includes('name'));
+                const bpmCol = headers.findIndex(h => h.includes('bpm'));
+                const keyCol = headers.findIndex(h => h.includes('key'));
+                const validityCol = headers.findIndex(h => h.includes('validity'));
+                const stemsCol = headers.findIndex(h => h.includes('stems'));
+                const notesCol = headers.findIndex(h => h.includes('notes'));
+                
+                // Process data rows (starting from row 3)
+                for (let i = 3; i < jsonData.length; i++) {
+                    const row = jsonData[i];
+                    if (!row || row.length < 1) continue;
+                    
+                    const songTitle = songCol >= 0 && row[songCol] ? String(row[songCol]).trim() : '';
+                    const bpmValue = bpmCol >= 0 && row[bpmCol] ? row[bpmCol] : '';
+                    const keyValue = keyCol >= 0 && row[keyCol] ? String(row[keyCol]).trim() : '';
+                    const albumValue = albumCol >= 0 && row[albumCol] ? String(row[albumCol]).trim() : '';
+                    
+                    // Only add if we have a song title and it's not empty
+                    if (songTitle && songTitle !== '' && songTitle !== 'undefined') {
+                        const song = {
+                            title: songTitle,
+                            artist: artistName,
+                            bpm: parseInt(bpmValue) || 0,
+                            key: keyValue,
+                            album: albumValue,
+                            validity: validityCol >= 0 && row[validityCol] ? String(row[validityCol]).trim() : '',
+                            stems: stemsCol >= 0 && row[stemsCol] ? String(row[stemsCol]).trim() : '',
+                            notes: notesCol >= 0 && row[notesCol] ? String(row[notesCol]).trim() : ''
+                        };
+                        allSongs.push(song);
+                    }
+                }
+            });
+            
+            return allSongs;
+        }
+
+        function parseCSV(text, filename) {
+            const lines = text.split('\n');
+            if (lines.length < 2) return [];
+            
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+            const songs = [];
+            
+            // Try to find relevant columns
+            const titleCol = headers.findIndex(h => h.includes('song') || h.includes('title') || h.includes('track'));
+            const artistCol = headers.findIndex(h => h.includes('artist') || h.includes('performer'));
+            const bpmCol = headers.findIndex(h => h.includes('bpm') || h.includes('tempo'));
+            const keyCol = headers.findIndex(h => h.includes('key') || h.includes('pitch'));
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+                if (values.length < 2) continue;
+                
+                const song = {
+                    title: titleCol >= 0 ? values[titleCol] : values[0],
+                    artist: artistCol >= 0 ? values[artistCol] : filename.replace('.csv', ''),
+                    bpm: bpmCol >= 0 ? parseInt(values[bpmCol]) || 0 : 0,
+                    key: keyCol >= 0 ? values[keyCol] : '',
+                };
+                
+                if (song.title && song.title !== '') {
+                    songs.push(song);
+                }
+            }
+            
+            return songs;
+        }
+
+        function populateFilters() {
+            const artists = [...new Set(allSongs.map(s => s.artist))].sort();
+            const keys = [...new Set(allSongs.map(s => s.key).filter(k => k))].sort();
+            const albums = [...new Set(allSongs.map(s => s.album).filter(a => a))].sort();
+            
+            const artistFilter = document.getElementById('artistFilter');
+            const keyFilter = document.getElementById('keyFilter');
+            const albumFilter = document.getElementById('albumFilter');
+            
+            artistFilter.innerHTML = '<option value="">All Artists</option>';
+            artists.forEach(artist => {
+                artistFilter.innerHTML += `<option value="${artist}">${artist}</option>`;
+            });
+            
+            keyFilter.innerHTML = '<option value="">All Keys</option>';
+            keys.forEach(key => {
+                keyFilter.innerHTML += `<option value="${key}">${key}</option>`;
+            });
+            
+            albumFilter.innerHTML = '<option value="">All Albums</option>';
+            albums.forEach(album => {
+                albumFilter.innerHTML += `<option value="${album}">${album}</option>`;
+            });
+        }
+
+        function applyFilters() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const artistFilter = document.getElementById('artistFilter').value;
+            const keyFilter = document.getElementById('keyFilter').value;
+            const albumFilter = document.getElementById('albumFilter').value;
+            const bpmMin = parseInt(document.getElementById('bpmMin').value) || 0;
+            const bpmMax = parseInt(document.getElementById('bpmMax').value) || 999;
+            
+            filteredSongs = allSongs.filter(song => {
+                const matchesSearch = !searchText || 
+                    song.title.toLowerCase().includes(searchText) ||
+                    song.artist.toLowerCase().includes(searchText) ||
+                    (song.album && song.album.toLowerCase().includes(searchText));
+                
+                const matchesArtist = !artistFilter || song.artist === artistFilter;
+                const matchesKey = !keyFilter || song.key === keyFilter;
+                const matchesAlbum = !albumFilter || song.album === albumFilter;
+                const matchesBPM = song.bpm >= bpmMin && song.bpm <= bpmMax;
+                
+                return matchesSearch && matchesArtist && matchesKey && matchesAlbum && matchesBPM;
+            });
+            
+            sortAndDisplayResults();
+        }
+
+        function sortAndDisplayResults() {
+            const sortBy = document.getElementById('sortBy').value;
+            
+            filteredSongs.sort((a, b) => {
+                switch (sortBy) {
+                    case 'title':
+                        return a.title.localeCompare(b.title);
+                    case 'artist':
+                        return a.artist.localeCompare(b.artist);
+                    case 'album':
+                        return (a.album || '').localeCompare(b.album || '');
+                    case 'bpm':
+                        return b.bpm - a.bpm;
+                    case 'key':
+                        return a.key.localeCompare(b.key);
+                    default:
+                        return 0;
+                }
+            });
+            
+            displayResults();
+        }
+
+        function displayResults() {
+            const resultsCount = document.getElementById('resultsCount');
+            const songsGrid = document.getElementById('songsGrid');
+            
+            resultsCount.textContent = `${filteredSongs.length} songs found`;
+            
+            if (filteredSongs.length === 0) {
+                songsGrid.innerHTML = '<div class="no-results">No songs match your search criteria</div>';
+                return;
+            }
+            
+            songsGrid.innerHTML = filteredSongs.map(song => `
+                <div class="song-card">
+                    <div class="song-title">${song.title}</div>
+                    <div class="song-artist">${song.artist}</div>
+                    ${song.album ? `<div style="color: #888; margin-bottom: 8px; font-size: 0.9rem;">${song.album}</div>` : ''}
+                    <div class="song-details">
+                        <div class="detail-item">
+                            <div class="detail-label">BPM</div>
+                            <div class="detail-value">${song.bpm || 'N/A'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Key</div>
+                            <div class="detail-value">${song.key || 'N/A'}</div>
+                        </div>
+                        ${song.validity ? `<div class="detail-item">
+                            <div class="detail-label">Valid</div>
+                            <div class="detail-value">${song.validity}</div>
+                        </div>` : ''}
+                        ${song.stems ? `<div class="detail-item">
+                            <div class="detail-label">Stems</div>
+                            <div class="detail-value">${song.stems}</div>
+                        </div>` : ''}
+                    </div>
+                    ${song.notes ? `<div style="margin-top: 10px; font-size: 0.85rem; color: #666; font-style: italic;">${song.notes}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('artistFilter').value = '';
+            document.getElementById('keyFilter').value = '';
+            document.getElementById('albumFilter').value = '';
+            document.getElementById('bpmMin').value = '';
+            document.getElementById('bpmMax').value = '';
+            applyFilters();
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('artistFilter').addEventListener('change', applyFilters);
+        document.getElementById('keyFilter').addEventListener('change', applyFilters);
+        document.getElementById('albumFilter').addEventListener('change', applyFilters);
+        document.getElementById('bpmMin').addEventListener('input', applyFilters);
+        document.getElementById('bpmMax').addEventListener('input', applyFilters);
+        document.getElementById('sortBy').addEventListener('change', sortAndDisplayResults);
+    </script>
+</body>
+</html>
